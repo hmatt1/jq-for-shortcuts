@@ -1,0 +1,103 @@
+name: Generate App Store Screenshots
+
+# Manual only: screenshots need regenerating when the UI they capture
+# changes, not on every commit. Drives the Simulator, so it needs no signing,
+# and publishes to its own `screenshots-run-*` release tags, never the app's
+# `v*` version releases.
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    name: Capture Screenshots
+    runs-on: xcode-27
+    timeout-minutes: 60
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
+
+      - name: Boot Simulators
+        run: |
+          # Tools/resolve-simulator.py picks the iPhone and iPad Pro device
+          # types and the newest iOS runtime this Xcode ships, instead of a
+          # hardcoded generation that might not exist on the runner.
+          RESOLVED=$(python3 Tools/resolve-simulator.py)
+          echo "$RESOLVED" >> "$GITHUB_ENV"
+          eval "$RESOLVED"
+
+          IPHONE_UDID=$(xcrun simctl create "Screenshots-iPhone" "$IPHONE_TYPE" "$RUNTIME")
+          IPAD_UDID=$(xcrun simctl create "Screenshots-iPad" "$IPAD_TYPE" "$RUNTIME")
+          xcrun simctl boot "$IPHONE_UDID"
+          xcrun simctl boot "$IPAD_UDID"
+
+          # A clean status bar: 9:41, full battery and signal.
+          for udid in "$IPHONE_UDID" "$IPAD_UDID"; do
+            xcrun simctl status_bar "$udid" override --time "9:41" --batteryState charged --batteryLevel 100 \
+              --wifiBars 3 --cellularMode active --cellularBars 4 || true
+          done
+
+          echo "IPHONE_UDID=$IPHONE_UDID" >> "$GITHUB_ENV"
+          echo "IPAD_UDID=$IPAD_UDID" >> "$GITHUB_ENV"
+
+      - name: Capture iPhone Screenshots
+        run: |
+          xcodebuild test \
+            -project JQForShortcuts.xcodeproj \
+            -scheme JQForShortcuts \
+            -destination "platform=iOS Simulator,id=$IPHONE_UDID" \
+            -resultBundlePath iphone.xcresult \
+            -only-testing:AppScreenshotsUITests
+
+      - name: Capture iPad Screenshots
+        run: |
+          xcodebuild test \
+            -project JQForShortcuts.xcodeproj \
+            -scheme JQForShortcuts \
+            -destination "platform=iOS Simulator,id=$IPAD_UDID" \
+            -resultBundlePath ipad.xcresult \
+            -only-testing:AppScreenshotsUITests
+
+      - name: Extract Screenshots
+        run: |
+          xcrun xcresulttool export attachments --path iphone.xcresult --output-path iphone-export
+          xcrun xcresulttool export attachments --path ipad.xcresult --output-path ipad-export
+
+          python3 Tools/organize-screenshots.py iphone-export screenshots/iphone
+          python3 Tools/organize-screenshots.py ipad-export screenshots/ipad
+
+      - name: Zip Screenshots
+        run: zip -r screenshots.zip screenshots
+
+      - name: Upload Screenshots Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: screenshots-run-${{ github.run_number }}
+          name: "Screenshots (run ${{ github.run_number }})"
+          prerelease: true
+          files: screenshots.zip
+
+      - name: Shutdown and Remove Simulators
+        if: always()
+        run: |
+          # The runner may be reused, so delete what this run created.
+          for udid in "$IPHONE_UDID" "$IPAD_UDID"; do
+            if [ -n "$udid" ]; then
+              xcrun simctl shutdown "$udid" || true
+              xcrun simctl delete "$udid" || true
+            fi
+          done

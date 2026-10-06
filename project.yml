@@ -1,0 +1,214 @@
+name: JQForShortcuts
+options:
+  bundleIdPrefix: com.hmatt1
+  developmentLanguage: en
+  deploymentTarget:
+    iOS: "27.0"
+
+# The filter engine is a local Swift package, so it builds and tests on its
+# own with `swift test --package-path Packages/JQEngine`, and every target
+# below links the same code.
+packages:
+  JQEngine:
+    path: Packages/JQEngine
+
+targets:
+  JQForShortcuts:
+    type: application
+    platform: iOS
+    deploymentTarget: "27.0"
+    # Shared/Core is plain Swift (stores, the run pipeline, error messages)
+    # and Shared/Intents holds the App Intents the controls extension needs
+    # too. A control that opens its app needs its OpenIntent compiled into
+    # both the app and the extension.
+    sources: [App, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hmatt1.jqforshortcuts
+        PRODUCT_NAME: JQForShortcuts
+        DEVELOPMENT_TEAM: FHMS65N3XS
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_ENTITLEMENTS: App/JQForShortcuts.entitlements
+      # configs: must live inside settings, not beside it, or XcodeGen
+      # ignores it (see XcodeGen's ProjectSpec.md "Settings").
+      configs:
+        Release:
+          # Manual, not Automatic: one fixed Distribution certificate and one
+          # profile per bundle ID, created once by Tools/setup-signing.py, so
+          # CI never mints a new certificate per run. Debug stays Automatic
+          # for building to your own device from Xcode.
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          CODE_SIGN_STYLE: Manual
+          PROVISIONING_PROFILE_SPECIFIER: "JQ for Shortcuts App Store"
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: JQ for Shortcuts
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations: {}
+        # The app has no networking code, so it uses no encryption beyond
+        # what the OS provides. This answers the export-compliance question
+        # for every build.
+        ITSAppUsesNonExemptEncryption: false
+        # Required once TARGETED_DEVICE_FAMILY includes iPad.
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # jqforshortcuts://playground, used by the share extension to open
+        # the Playground with the shared input.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.hmatt1.jqforshortcuts
+            CFBundleURLSchemes:
+              - jqforshortcuts
+    dependencies:
+      - target: JQShareExtension
+        embed: true
+      - target: JQControls
+        embed: true
+      - package: JQEngine
+      - sdk: SwiftUI.framework
+      - sdk: AppIntents.framework
+      - sdk: WidgetKit.framework
+    scheme:
+      testTargets:
+        - AppLogicTests
+        - AppScreenshotsUITests
+
+  # Share sheet: Open in Playground, or Run Saved Filter with a Copy button
+  # (design R7.1, R7.2).
+  JQShareExtension:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources: [ShareExtension, Shared/Core]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hmatt1.jqforshortcuts.ShareExtension
+        PRODUCT_NAME: JQShareExtension
+        DEVELOPMENT_TEAM: FHMS65N3XS
+        CODE_SIGN_STYLE: Automatic
+        SKIP_INSTALL: "YES"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        SWIFT_EMIT_LOC_STRINGS: YES
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_ENTITLEMENTS: ShareExtension/JQShareExtension.entitlements
+      configs:
+        Release:
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          CODE_SIGN_STYLE: Manual
+          PROVISIONING_PROFILE_SPECIFIER: "JQ for Shortcuts Share Extension App Store"
+    info:
+      path: ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: JQ for Shortcuts
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).ShareViewController"
+          NSExtensionAttributes:
+            # JSON text and .json files only (R7.1).
+            NSExtensionActivationRule: >-
+              SUBQUERY (extensionItems, $extensionItem,
+              SUBQUERY ($extensionItem.attachments, $attachment,
+              ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.json"
+              OR ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.plain-text"
+              ).@count >= 1).@count >= 1
+    dependencies:
+      - package: JQEngine
+      - sdk: SwiftUI.framework
+
+  # Lock Screen and Control Center controls (R7.4).
+  JQControls:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources: [Controls, Shared/Core, Shared/Intents]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hmatt1.jqforshortcuts.Controls
+        PRODUCT_NAME: JQControls
+        DEVELOPMENT_TEAM: FHMS65N3XS
+        CODE_SIGN_STYLE: Automatic
+        SKIP_INSTALL: "YES"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        SWIFT_EMIT_LOC_STRINGS: YES
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_ENTITLEMENTS: Controls/JQControls.entitlements
+      configs:
+        Release:
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          CODE_SIGN_STYLE: Manual
+          PROVISIONING_PROFILE_SPECIFIER: "JQ for Shortcuts Controls App Store"
+    info:
+      path: Controls/Info.plist
+      properties:
+        CFBundleDisplayName: JQ for Shortcuts
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    dependencies:
+      - package: JQEngine
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: AppIntents.framework
+
+  # Fast, host-less unit tests of Shared/Core: the run pipeline, the R8
+  # messages, output modes, the JSON tools, the stores and the tree browser.
+  # Like the widget app's logic tests, the bundle compiles the sources
+  # itself instead of linking the app. App/Resources is copied in so the
+  # presets and gallery run through the same pipeline the app uses.
+  AppLogicTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources:
+      - AppLogicTests
+      - Shared/Core
+      - path: App/Resources
+        buildPhase: resources
+    dependencies:
+      - package: JQEngine
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hmatt1.jqforshortcuts.LogicTests
+        DEVELOPMENT_TEAM: FHMS65N3XS
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+
+  # Drives the app in the Simulator to capture App Store screenshots (see
+  # .github/workflows/screenshots.yml). Simulator-only, never archived.
+  AppScreenshotsUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources: [AppScreenshots]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hmatt1.jqforshortcuts.ScreenshotsUITests
+        DEVELOPMENT_TEAM: FHMS65N3XS
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: JQForShortcuts

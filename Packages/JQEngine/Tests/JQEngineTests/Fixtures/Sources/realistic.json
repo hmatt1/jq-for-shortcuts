@@ -1,0 +1,727 @@
+[
+{
+"filter": "[.[] | select(.prerelease | not)][0] | \"\\(.tag_name) \\(.html_url)\"",
+"input": "[{\"tag_name\": \"v2.0.0-beta.1\", \"prerelease\": true, \"html_url\": \"https://example.com/r/3\", \"published_at\": \"2026-09-01T10:00:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 12}]}, {\"tag_name\": \"v1.9.2\", \"prerelease\": false, \"html_url\": \"https://example.com/r/2\", \"published_at\": \"2026-08-15T09:30:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 340}, {\"name\": \"app.tar.gz\", \"download_count\": 41}]}, {\"tag_name\": \"v1.9.1\", \"prerelease\": false, \"html_url\": \"https://example.com/r/1\", \"published_at\": \"2026-07-02T08:00:00Z\", \"assets\": []}]"
+},
+{
+"filter": "map(select(.prerelease == false)) | first | .tag_name",
+"input": "[{\"tag_name\": \"v2.0.0-beta.1\", \"prerelease\": true, \"html_url\": \"https://example.com/r/3\", \"published_at\": \"2026-09-01T10:00:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 12}]}, {\"tag_name\": \"v1.9.2\", \"prerelease\": false, \"html_url\": \"https://example.com/r/2\", \"published_at\": \"2026-08-15T09:30:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 340}, {\"name\": \"app.tar.gz\", \"download_count\": 41}]}, {\"tag_name\": \"v1.9.1\", \"prerelease\": false, \"html_url\": \"https://example.com/r/1\", \"published_at\": \"2026-07-02T08:00:00Z\", \"assets\": []}]"
+},
+{
+"filter": "[.[] | {tag: .tag_name, downloads: ([.assets[].download_count] | add // 0)}]",
+"input": "[{\"tag_name\": \"v2.0.0-beta.1\", \"prerelease\": true, \"html_url\": \"https://example.com/r/3\", \"published_at\": \"2026-09-01T10:00:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 12}]}, {\"tag_name\": \"v1.9.2\", \"prerelease\": false, \"html_url\": \"https://example.com/r/2\", \"published_at\": \"2026-08-15T09:30:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 340}, {\"name\": \"app.tar.gz\", \"download_count\": 41}]}, {\"tag_name\": \"v1.9.1\", \"prerelease\": false, \"html_url\": \"https://example.com/r/1\", \"published_at\": \"2026-07-02T08:00:00Z\", \"assets\": []}]"
+},
+{
+"filter": "max_by(.published_at) | .tag_name",
+"input": "[{\"tag_name\": \"v2.0.0-beta.1\", \"prerelease\": true, \"html_url\": \"https://example.com/r/3\", \"published_at\": \"2026-09-01T10:00:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 12}]}, {\"tag_name\": \"v1.9.2\", \"prerelease\": false, \"html_url\": \"https://example.com/r/2\", \"published_at\": \"2026-08-15T09:30:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 340}, {\"name\": \"app.tar.gz\", \"download_count\": 41}]}, {\"tag_name\": \"v1.9.1\", \"prerelease\": false, \"html_url\": \"https://example.com/r/1\", \"published_at\": \"2026-07-02T08:00:00Z\", \"assets\": []}]"
+},
+{
+"filter": "[.[] | .published_at | fromdateiso8601] | max | todate",
+"input": "[{\"tag_name\": \"v2.0.0-beta.1\", \"prerelease\": true, \"html_url\": \"https://example.com/r/3\", \"published_at\": \"2026-09-01T10:00:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 12}]}, {\"tag_name\": \"v1.9.2\", \"prerelease\": false, \"html_url\": \"https://example.com/r/2\", \"published_at\": \"2026-08-15T09:30:00Z\", \"assets\": [{\"name\": \"app.zip\", \"download_count\": 340}, {\"name\": \"app.tar.gz\", \"download_count\": 41}]}, {\"tag_name\": \"v1.9.1\", \"prerelease\": false, \"html_url\": \"https://example.com/r/1\", \"published_at\": \"2026-07-02T08:00:00Z\", \"assets\": []}]"
+},
+{
+"filter": "\"\\(.name) is \\(.main.temp) degrees\"",
+"input": "{\"name\": \"Chicago\", \"main\": {\"temp\": 21.4, \"humidity\": 62, \"feels_like\": 20.9}, \"weather\": [{\"main\": \"Clouds\", \"description\": \"broken clouds\"}], \"wind\": {\"speed\": 4.12}, \"dt\": 1759700000}"
+},
+{
+"filter": "\"\\(.name): \\(.weather[0].description), \\(.main.temp | round)\u00b0, wind \\(.wind.speed) m/s\"",
+"input": "{\"name\": \"Chicago\", \"main\": {\"temp\": 21.4, \"humidity\": 62, \"feels_like\": 20.9}, \"weather\": [{\"main\": \"Clouds\", \"description\": \"broken clouds\"}], \"wind\": {\"speed\": 4.12}, \"dt\": 1759700000}"
+},
+{
+"filter": ".dt | todate, gmtime, (gmtime | mktime), strftime(\"%A %B %d %Y %H:%M\")",
+"input": "{\"name\": \"Chicago\", \"main\": {\"temp\": 21.4, \"humidity\": 62, \"feels_like\": 20.9}, \"weather\": [{\"main\": \"Clouds\", \"description\": \"broken clouds\"}], \"wind\": {\"speed\": 4.12}, \"dt\": 1759700000}"
+},
+{
+"filter": "group_by(.artist) | map({artist: .[0].artist, plays: length})",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": "group_by(.artist) | map({artist: .[0].artist, plays: length, minutes: (map(.ms) | add / 60000 | floor)}) | sort_by(-.plays)",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": "reduce .[] as $p ({}; .[$p.artist] += 1)",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": "[.[] | .artist] | unique | length",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": "map(.ts[0:10]) | group_by(.) | map({day: .[0], plays: length})",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": "[limit(3; sort_by(-.ms)[] | .track)]",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": "{id, name, status}",
+"input": "{\"id\": 8812, \"name\": \"Deploy finished\", \"status\": \"success\", \"sender\": {\"login\": \"octo\", \"id\": 1}, \"repository\": {\"full_name\": \"acme/site\", \"private\": false}, \"commits\": [{\"id\": \"abc123\", \"message\": \"Fix nav\"}], \"meta\": {\"attempt\": 1, \"secret\": \"x\"}}"
+},
+{
+"filter": "{id, name, status, repo: .repository.full_name, author: .sender.login}",
+"input": "{\"id\": 8812, \"name\": \"Deploy finished\", \"status\": \"success\", \"sender\": {\"login\": \"octo\", \"id\": 1}, \"repository\": {\"full_name\": \"acme/site\", \"private\": false}, \"commits\": [{\"id\": \"abc123\", \"message\": \"Fix nav\"}], \"meta\": {\"attempt\": 1, \"secret\": \"x\"}}"
+},
+{
+"filter": "del(.meta, .sender.id) | .commits |= length",
+"input": "{\"id\": 8812, \"name\": \"Deploy finished\", \"status\": \"success\", \"sender\": {\"login\": \"octo\", \"id\": 1}, \"repository\": {\"full_name\": \"acme/site\", \"private\": false}, \"commits\": [{\"id\": \"abc123\", \"message\": \"Fix nav\"}], \"meta\": {\"attempt\": 1, \"secret\": \"x\"}}"
+},
+{
+"filter": "pick(.id, .repository.full_name, .commits[0].message)",
+"input": "{\"id\": 8812, \"name\": \"Deploy finished\", \"status\": \"success\", \"sender\": {\"login\": \"octo\", \"id\": 1}, \"repository\": {\"full_name\": \"acme/site\", \"private\": false}, \"commits\": [{\"id\": \"abc123\", \"message\": \"Fix nav\"}], \"meta\": {\"attempt\": 1, \"secret\": \"x\"}}"
+},
+{
+"filter": ".[] | [.id, .name, .email] | @csv",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "(.[0] | keys_unsorted) as $cols | $cols, (.[] | [.[$cols[]]] | map(if type == \"object\" or type == \"array\" then tojson else . end)) | @csv",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map({name, city: .address.city})",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map(select(.role == \"admin\") | .email)",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map(select(.tags | index(\"b\")))| map(.name)",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map(select(.email != null) | .email | split(\"@\")[1]) | unique",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "INDEX(.id) | map_values(.name)",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map({(.name): .id}) | add",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "[.[] | .tags[]] | group_by(.) | map({tag: .[0], count: length})",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": ".data.items | map(.qty * .price) | add",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | group_by(.category) | map({category: .[0].category, total: (map(.qty * .price) | add), count: length})",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items[] | select(.price > 5 and .qty > 1) | .sku",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | sort_by(.price) | reverse | .[0:2] | map(.sku)",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(.price) | [min, max, (add / length)]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items[] | {sku, total: (.qty * .price | . * 100 | round / 100)}]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items[3].sku",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | length",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[paths(type == \"number\")] | map(map(tostring) | join(\".\"))",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[leaf_paths?]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.. | .sku? // empty]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(.category) | unique",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "to_entries | map(\"\\(.key)=\\(.value)\") | join(\"&\")",
+"input": "{\"q\": \"jq\", \"page\": 2, \"safe\": true}"
+},
+{
+"filter": "with_entries(.key |= ascii_upcase)",
+"input": "{\"q\": 1}"
+},
+{
+"filter": "with_entries({key: .value, value: .key})",
+"input": "{\"a\": \"x\", \"b\": \"y\"}"
+},
+{
+"filter": "to_entries | map(select(.value != null)) | from_entries",
+"input": "{\"a\": 1, \"b\": null, \"c\": false}"
+},
+{
+"filter": "[paths(..)] | length",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".. | objects | select(has(\"sku\")) | .sku",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items[] | .price] | add / length | . * 100 | floor / 100",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[splits(\", \")] | map(ascii_downcase | ltrimstr(\" \"))",
+"input": "\"Red, Green, Blue\""
+},
+{
+"filter": "split(\"\\n\") | map(select(length > 0) | split(\",\")) | .[0] as $h | .[1:] | map([$h, .] | transpose | map({(.[0]): .[1]}) | add)",
+"input": "\"name,age\\nada,36\\ngrace,45\\n\""
+},
+{
+"filter": "if type == \"array\" then length elif type == \"object\" then keys | length else 0 end",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items[] | .category] | group_by(.) | map({(.[0]): length}) | add",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | [.[] | select(.category == \"books\")] | {count: length, skus: map(.sku)}",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(select(.sku | test(\"^[AB]\")))",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(.sku |= ascii_downcase)",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items |= map(.price *= 2) | .data.items[0].price",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items[] |= del(.category) | .data.items[0]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items[] | .qty] | add as $total | $total",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items as $items | $items | length as $n | {n: $n, first: $items[0].sku}",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[range(0; length; 2) as $i | .[$i:$i+2]]",
+"input": "[1, 2, 3, 4, 5]"
+},
+{
+"filter": "[.[] | tostring] | join(\",\")",
+"input": "[1, \"two\", null, true, 2.5]"
+},
+{
+"filter": "map(tostring) | join(\", \")",
+"input": "[1, 2, 3]"
+},
+{
+"filter": "[.[] | ascii_downcase | gsub(\"[^a-z0-9]+\"; \"-\") | ltrimstr(\"-\") | rtrimstr(\"-\")]",
+"input": "[\"Hello World!\", \"  Already-Slugged \", \"C++ & Rust\"]"
+},
+{
+"filter": "gsub(\"(?<x>[A-Z])\"; \"_\\(.x | ascii_downcase)\")",
+"input": "\"camelCaseString\""
+},
+{
+"filter": "[.[] | capture(\"(?<user>[^@]+)@(?<domain>.+)\")]",
+"input": "[\"ada@example.com\", \"x@y.org\"]"
+},
+{
+"filter": "[match(\"\\\\d+\"; \"g\") | .string | tonumber] | add",
+"input": "\"a1b22c333\""
+},
+{
+"filter": "@base64 | @base64d",
+"input": "\"round trip \u2713\""
+},
+{
+"filter": "[.[] | todate]",
+"input": "[0, 1700000000, 2000000000.5]"
+},
+{
+"filter": "[.[] | strptime(\"%Y-%m-%d\") | mktime]",
+"input": "[\"2024-02-29\", \"1999-12-31\"]"
+},
+{
+"filter": "strptime(\"%Y-%m-%dT%H:%M:%SZ\")",
+"input": "\"2015-03-05T23:51:47Z\""
+},
+{
+"filter": "[.[] | fromdate]",
+"input": "[\"2015-03-05T23:51:47Z\", \"1970-01-01T00:00:00Z\"]"
+},
+{
+"filter": "try fromdate catch .",
+"input": "\"not a date\""
+},
+{
+"filter": "[.[] | strftime(\"%Y-%m-%dT%H:%M:%SZ\"), strftime(\"%j %a %b %e\")]",
+"input": "[0, 951782400]"
+},
+{
+"filter": "gmtime | todate",
+"input": "1425599621.25"
+},
+{
+"filter": "mktime",
+"input": "[2024, 1, 29, 12, 30, 45, 4, 59]"
+},
+{
+"filter": "try mktime catch .",
+"input": "[2024, 1, 29]"
+},
+{
+"filter": "try mktime catch .",
+"input": "\"x\""
+},
+{
+"filter": "gmtime",
+"input": "-1.5"
+},
+{
+"filter": "gmtime",
+"input": "1e10"
+},
+{
+"filter": "[.[] | select(type == \"object\") | keys[]] | unique",
+"input": "[{\"a\": 1}, 2, {\"b\": 3, \"a\": 4}]"
+},
+{
+"filter": "reduce .[] as $x ({}; . * $x)",
+"input": "[{\"a\": {\"b\": 1}}, {\"a\": {\"c\": 2}}, {\"d\": 3}]"
+},
+{
+"filter": "reduce (.[] | to_entries[]) as {key: $k, value: $v} ({}; .[$k] += [$v])",
+"input": "[{\"a\": 1, \"b\": 2}, {\"a\": 3}]"
+},
+{
+"filter": "[foreach .[] as $x (0; . + $x)]",
+"input": "[1, 2, 3, 4]"
+},
+{
+"filter": "[limit(5; .[] | select(. % 2 == 0))]",
+"input": "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]"
+},
+{
+"filter": "first(.[] | select(. > 10)) // \"none\"",
+"input": "[1, 5, 12, 20]"
+},
+{
+"filter": "any(.[]; . > 10), all(.[]; . > 0)",
+"input": "[1, 5, 12]"
+},
+{
+"filter": "[.[] | numbers] | (add / length) as $mean | map(. - $mean | . * .) | add / length | sqrt",
+"input": "[2, 4, 4, 4, 5, 5, 7, 9]"
+},
+{
+"filter": "to_entries | sort_by(.value) | reverse | .[0].key",
+"input": "{\"a\": 3, \"b\": 7, \"c\": 5}"
+},
+{
+"filter": "[.[] | select(.a? // false)]",
+"input": "[{\"a\": true}, 1, {\"a\": null}]"
+},
+{
+"filter": ".a[]? // \"none\"",
+"input": "{\"a\": null}"
+},
+{
+"filter": "[.[] | .x // \"default\"]",
+"input": "[{\"x\": 0}, {\"x\": false}, {}]"
+},
+{
+"filter": "try (.[] | if . == 3 then error(\"bad: \\(.)\") else . end) catch .",
+"input": "[1, 2, 3, 4]"
+},
+{
+"filter": "[.[] | try tonumber catch \"NaN\"]",
+"input": "[\"1\", \"x\", \"2.5\"]"
+},
+{
+"filter": "[.[] | tonumber? // .]",
+"input": "[\"1\", \"x\"]"
+},
+{
+"filter": ".a as [$x, $y] | {x: $x, y: $y}",
+"input": "{\"a\": [1, 2, 3]}"
+},
+{
+"filter": "[.[] | {name: .n} + (.extra // {})]",
+"input": "[{\"n\": \"a\", \"extra\": {\"z\": 1}}, {\"n\": \"b\"}]"
+},
+{
+"filter": "[.[] | .name] | sort | join(\"\\n\")",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map(.address.city) | @tsv",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map([.id, .name]) | .[] | @tsv",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "[.[] | @html \"<li>\\(.name)</li>\"] | join(\"\")",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "@uri \"https://example.com/search?q=\\(.q)\"",
+"input": "{\"q\": \"jq & shortcuts\"}"
+},
+{
+"filter": "@sh \"echo \\(.)\"",
+"input": "\"it's\""
+},
+{
+"filter": "getpath([\"data\",\"items\",0,\"sku\"])",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[paths(type == \"string\")] | length",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.. | select(type == \"number\")] | add",
+"input": "{\"a\": [1, {\"b\": 2}], \"c\": 3}"
+},
+{
+"filter": "tostream | select(length == 2) | \"\\(.[0] | map(tostring) | join(\".\")) = \\(.[1])\"",
+"input": "{\"a\": {\"b\": 1}, \"c\": [2]}"
+},
+{
+"filter": "reduce (tostream | select(length == 2)) as [$p, $v] ({}; .[$p | map(tostring) | join(\".\")] = $v)",
+"input": "{\"a\": {\"b\": 1}, \"c\": [2, 3]}"
+},
+{
+"filter": "walk(if type == \"object\" then with_entries(.key |= ascii_downcase) else . end)",
+"input": "{\"A\": {\"B\": [{\"C\": 1}]}}"
+},
+{
+"filter": "[.[] | select(.name | test(\"^a\"; \"i\"))]",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map(.tags | length) | add",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": ".[1:] | map(.name)",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "(map(.id) | max) + 1",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "[.[] | select(.id == (1, 3))] | map(.name)",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "map(select(IN(.role; \"admin\", \"owner\")))| length",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "[.[] | {(.role): .name}] | reduce .[] as $o ({}; . * $o)",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": ".[0] | to_entries | map(select(.value | type == \"string\")) | from_entries",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": ".[] |= with_entries(select(.key | IN(\"id\", \"name\")))",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "[.[] | .address.city |= ascii_upcase | .address]",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "input_line_number, $__loc__",
+"input": "null"
+},
+{
+"filter": "[.[] | ltrimstr(\"v\") | split(\".\") | map(tonumber)] | sort | last | join(\".\")",
+"input": "[\"v1.10.0\", \"v1.9.2\", \"v1.2.30\"]"
+},
+{
+"filter": "sort_by(ltrimstr(\"v\") | split(\".\") | map(tonumber)) | last",
+"input": "[\"v1.10.0\", \"v1.9.2\", \"v1.2.30\"]"
+},
+{
+"filter": "[.[] | select(startswith(\"#\") | not)]",
+"input": "[\"#c\", \"a\", \"b\"]"
+},
+{
+"filter": "[.[] | split(\"=\") | {(.[0]): .[1]}] | add",
+"input": "[\"a=1\", \"b=2\"]"
+},
+{
+"filter": "[.[] as $x | $x * 2]",
+"input": "[1, 2, 3]"
+},
+{
+"filter": "def addvalue(f): f as $x | map(. + $x); addvalue(.[0])",
+"input": "[[1, 2], [10, 20]]"
+},
+{
+"filter": "def f: if . > 0 then . - 1 | f else . end; [.[] | f]",
+"input": "[3, 0]"
+},
+{
+"filter": "[limit(10; recurse(if . < 100 then . * 3 else empty end))]",
+"input": "1"
+},
+{
+"filter": "[.[] | until(. >= 10; . + 3)]",
+"input": "[1, 2, 3]"
+},
+{
+"filter": "[repeat(.; .)] | length",
+"input": "1"
+},
+{
+"filter": "to_entries | map(.value |= tostring) | from_entries",
+"input": "{\"a\": 1, \"b\": [1]}"
+},
+{
+"filter": "[getpath([\"a\"], [\"b\",\"c\"])]",
+"input": "{\"a\": 1, \"b\": {\"c\": 2}}"
+},
+{
+"filter": "[paths(numbers)] as $p | $p | length",
+"input": "{\"x\": [1, 2], \"y\": {\"z\": 3}}"
+},
+{
+"filter": "[splits(\"[,;]\\\\s*\")]",
+"input": "\"a, b;c ;d\""
+},
+{
+"filter": "ascii_downcase | [scan(\"[a-z]+\")] | group_by(.) | map({(.[0]): length}) | add",
+"input": "\"The cat and the hat and THE bat\""
+},
+{
+"filter": "[.[] | {k: .[0], v: .[1]}] | from_entries",
+"input": "[[\"a\",1],[\"b\",2]]"
+},
+{
+"filter": "from_entries",
+"input": "[{\"key\":\"a\",\"value\":1},{\"key\":\"b\",\"value\":2}]"
+},
+{
+"filter": "[.[] | {key: .name, value: .id}] | from_entries",
+"input": "[{\"id\": 1, \"name\": \"Ada\", \"email\": \"ada@example.com\", \"role\": \"admin\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"London\"}}, {\"id\": 2, \"name\": \"Grace\", \"email\": \"grace@example.com\", \"role\": \"user\", \"tags\": [\"b\"], \"address\": {\"city\": \"New York\"}}, {\"id\": 3, \"name\": \"Linus\", \"email\": null, \"role\": \"user\", \"tags\": [], \"address\": {\"city\": \"Portland\"}}]"
+},
+{
+"filter": "keys - [\"id\"]",
+"input": "{\"id\": 1, \"a\": 2, \"b\": 3}"
+},
+{
+"filter": "[.[] | select(type == \"number\" and . > 1)]",
+"input": "[1, \"2\", 3, null]"
+},
+{
+"filter": "map(select(. != null)) | length",
+"input": "[1, null, 2]"
+},
+{
+"filter": "[.. | strings] | map(length) | max",
+"input": "{\"a\": \"abc\", \"b\": [\"de\", {\"c\": \"fghij\"}]}"
+},
+{
+"filter": "[range(1; 11)] | map(select(. % 3 == 0)) | add",
+"input": "null"
+},
+{
+"filter": "[range(1; 16)] | map(if . % 15 == 0 then \"FizzBuzz\" elif . % 3 == 0 then \"Fizz\" elif . % 5 == 0 then \"Buzz\" else tostring end) | join(\" \")",
+"input": "null"
+},
+{
+"filter": "[limit(10; def fib: [0,1] | recurse([.[1], add]) | .[0]; fib)]",
+"input": "null"
+},
+{
+"filter": "def primes: [range(2; 50)] | reduce .[] as $n ([]; if any(.[]; $n % . == 0) then . else . + [$n] end); primes",
+"input": "null"
+},
+{
+"filter": "[.[] | tostring | length] | max as $w | \"x\" * $w",
+"input": "[10, 2000, 3]"
+},
+{
+"filter": "{} | .a.b |= 1 | .c[2] = 3",
+"input": "null"
+},
+{
+"filter": ". as {a: {b: $x}} | $x",
+"input": "{\"a\": {\"b\": \"deep\"}}"
+},
+{
+"filter": "[.[] | select(.a == $v)]",
+"input": "[{\"a\": 1}, {\"a\": 2}]",
+"flags": [
+"--argjson",
+"v",
+"2"
+]
+},
+{
+"filter": "$v + 1",
+"input": "null",
+"flags": [
+"--argjson",
+"v",
+"41"
+]
+},
+{
+"filter": "\"Hello, \\($name)!\"",
+"input": "null",
+"flags": [
+"--arg",
+"name",
+"Shortcuts"
+]
+},
+{
+"filter": "[$a, $b] | map(type)",
+"input": "null",
+"flags": [
+"--arg",
+"a",
+"1",
+"--argjson",
+"b",
+"[1]"
+]
+},
+{
+"filter": "$ARGS",
+"input": "null",
+"flags": [
+"--arg",
+"x",
+"y"
+]
+},
+{
+"filter": "$ARGS.named.x",
+"input": "null",
+"flags": [
+"--argjson",
+"x",
+"{\"k\":1}"
+]
+},
+{
+"filter": "[.[] | .ms / 1000 | floor | \"\\(. / 60 | floor):\\(. % 60 | tostring | if length < 2 then \"0\" + . else . end)\"]",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": "map(.ms) | add / length / 1000 | round",
+"input": "[{\"artist\": \"Phoebe Bridgers\", \"track\": \"Motion Sickness\", \"ms\": 230000, \"ts\": \"2026-01-01T10:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Holocene\", \"ms\": 337000, \"ts\": \"2026-01-01T10:04:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Kyoto\", \"ms\": 184000, \"ts\": \"2026-01-02T11:00:00Z\"}, {\"artist\": \"Japanese Breakfast\", \"track\": \"Be Sweet\", \"ms\": 199000, \"ts\": \"2026-01-03T12:00:00Z\"}, {\"artist\": \"Bon Iver\", \"track\": \"Skinny Love\", \"ms\": 238000, \"ts\": \"2026-01-03T12:05:00Z\"}, {\"artist\": \"Phoebe Bridgers\", \"track\": \"Garden Song\", \"ms\": 220000, \"ts\": \"2026-01-04T09:00:00Z\"}]"
+},
+{
+"filter": ".data.items | map(\"\\(.sku): \\(.qty) \u00d7 $\\(.price)\") | join(\"\\n\")",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map({(.sku): .qty}) | add | to_entries | map(select(.value > 1)) | from_entries",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items[] | .price | tostring | split(\".\") | .[1] // \"00\"]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | (map(.qty) | add) as $q | map(.qty / $q * 100 | round)",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".page += 1 | .data.items = (.data.items | length)",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items[] | select(.category == \"books\")] | length",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data | to_entries[] | .key",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(del(.price)) | .[0]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(with_entries(select(.key == \"sku\" or .key == \"qty\")))",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items[] | .category] | unique_by(length)",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | min_by(.price), max_by(.qty) | .sku",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | [.[] | .price] | sort | .[length/2|floor]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(.price) | add / length | . * 1000 | round / 1000",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.data.items | to_entries[] | {i: .key, sku: .value.sku}]",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(.sku) | [., reverse] | transpose",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": ".data.items | map(.sku) | combinations(1) | join(\",\")",
+"input": "{\"data\":{\"items\":[{\"sku\":\"a\"},{\"sku\":\"b\"}]}}"
+},
+{
+"filter": "[.[] | .a] | @json",
+"input": "[{\"a\": 1}, {\"a\": \"x\"}]"
+},
+{
+"filter": "tojson | fromjson == .",
+"input": "{\"data\": {\"items\": [{\"sku\": \"A1\", \"qty\": 2, \"price\": 9.99, \"category\": \"books\"}, {\"sku\": \"B2\", \"qty\": 1, \"price\": 24.5, \"category\": \"games\"}, {\"sku\": \"C3\", \"qty\": 5, \"price\": 1.25, \"category\": \"books\"}, {\"sku\": \"D4\", \"qty\": 1, \"price\": 100, \"category\": \"toys\"}]}, \"page\": 1}"
+},
+{
+"filter": "[.[] | ascii] | implode",
+"input": "[72, 105]"
+}
+]

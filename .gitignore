@@ -1,0 +1,44 @@
+# Xcode
+build/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+*.xcresult
+exportOptions.plist
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# XcodeGen generated project
+*.xcodeproj/
+*.xcworkspace/
+
+# macOS
+.DS_Store
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Tools/setup-signing.py output: a private key, a certificate and three
+# provisioning profiles. Copied into GitHub secrets by hand, then deleted.
+.signing/
+
+# App Store Connect API keys
+*.p8
+
+# Screenshot workflow output
+screenshots/
+screenshots.zip
+*-export/

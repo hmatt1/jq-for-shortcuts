@@ -1,0 +1,34 @@
+name: Runner Info
+
+# Manual only. Prints what is installed on the xcode-27 runner right now:
+# the Xcode build, the Swift version and every Simulator runtime. Useful when
+# a build fails after GitHub updates the runner image, or to confirm the
+# runner has moved from an Xcode beta to the release build.
+on:
+  workflow_dispatch:
+
+jobs:
+  info:
+    name: Print Installed Xcode/Simulator Versions
+    runs-on: xcode-27
+    steps:
+      - name: Show Xcode, Swift, and Simulator Runtime Versions
+        run: |
+          echo "== xcodebuild -version =="
+          xcodebuild -version
+
+          echo
+          echo "== xcode-select -p =="
+          xcode-select -p
+
+          echo
+          echo "== swift --version =="
+          swift --version
+
+          echo
+          echo "== xcrun simctl list runtimes =="
+          xcrun simctl list runtimes
+
+          echo
+          echo "== xcrun simctl list devicetypes =="
+          xcrun simctl list devicetypes

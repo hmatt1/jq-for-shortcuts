@@ -1,0 +1,44 @@
+name: Update App Store Listing
+
+# Manual only. Pushes the listing copy, age rating and review notes in
+# Tools/app-store-connect.py to the version being prepared in App Store
+# Connect. The App Privacy answers have no API; see AppStore/listing.md.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Write the changes. Leave off for a dry run that only prints the requests.'
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  update-listing:
+    name: Update App Store Listing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check listing limits
+        run: python3 -m unittest discover -s Tools -p 'test_app_store_listing.py'
+
+      - name: Install dependencies
+        run: pip install pyjwt cryptography
+
+      - name: Push listing to App Store Connect
+        env:
+          ASC_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          ASC_KEY_ID: ${{ secrets.ADMIN_APPSTORE_KEY_ID }}
+          ASC_PRIVATE_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+          P8_KEY: ${{ secrets.ADMIN_APPSTORE_P8_KEY }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          trap 'rm -f "$ASC_PRIVATE_KEY_PATH"' EXIT
+          echo "$P8_KEY" | tr -d '\r' > "$ASC_PRIVATE_KEY_PATH"
+          if [ "$APPLY" = "true" ]; then
+            python3 Tools/app-store-connect.py --apply
+          else
+            python3 Tools/app-store-connect.py
+          fi

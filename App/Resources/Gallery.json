@@ -1,0 +1,142 @@
+{
+  "entries": [
+    {
+      "id": "latest-release",
+      "title": "Latest release",
+      "summary": "Show the newest GitHub release that is not a prerelease, with its link.",
+      "steps": [
+        "Get Contents of URL: https://api.github.com/repos/OWNER/REPO/releases",
+        "Run JSON Filter with the filter below, output One item per result",
+        "If Filter Results has any value",
+        "Show Result: Filter Results",
+        "End If"
+      ],
+      "filter": "([.[] | select(.prerelease | not)][0] // empty) | \"\\(.tag_name) \\(.html_url)\"",
+      "sampleInput": "[\n  {\n    \"tag_name\": \"v2.1.0-beta.1\",\n    \"prerelease\": true,\n    \"html_url\": \"https://github.com/example/app/releases/tag/v2.1.0-beta.1\",\n    \"published_at\": \"2026-09-30T12:00:00Z\"\n  },\n  {\n    \"tag_name\": \"v2.0.3\",\n    \"prerelease\": false,\n    \"html_url\": \"https://github.com/example/app/releases/tag/v2.0.3\",\n    \"published_at\": \"2026-09-12T08:30:00Z\"\n  },\n  {\n    \"tag_name\": \"v2.0.2\",\n    \"prerelease\": false,\n    \"html_url\": \"https://github.com/example/app/releases/tag/v2.0.2\",\n    \"published_at\": \"2026-08-01T17:45:00Z\"\n  }\n]",
+      "outputMode": "itemPerResult",
+      "valuesToChange": [
+        "OWNER and REPO in the URL"
+      ],
+      "expected": [
+        "\"v2.0.3 https://github.com/example/app/releases/tag/v2.0.3\""
+      ]
+    },
+    {
+      "id": "api-notification",
+      "title": "API response to a notification",
+      "summary": "Turn fields from an API response into one sentence and show it as a notification.",
+      "steps": [
+        "Get Contents of URL: your weather API URL",
+        "Run JSON Filter with the filter below, output Raw text lines",
+        "If Filter Results has any value",
+        "Show Notification: Filter Results",
+        "End If"
+      ],
+      "filter": "select(.main.temp != null) | \"\\(.name) is \\(.main.temp) degrees\"",
+      "sampleInput": "{\n  \"name\": \"Oslo\",\n  \"main\": {\n    \"temp\": 14.2,\n    \"humidity\": 71\n  },\n  \"weather\": [\n    {\n      \"description\": \"light rain\"\n    }\n  ]\n}",
+      "outputMode": "rawLines",
+      "valuesToChange": [
+        "The URL and API key",
+        "The field names in the filter"
+      ],
+      "expected": [
+        "\"Oslo is 14.2 degrees\""
+      ]
+    },
+    {
+      "id": "array-to-spreadsheet",
+      "title": "Array to spreadsheet",
+      "summary": "Turn a list of objects from an API into a CSV file in Files.",
+      "steps": [
+        "Get Contents of URL: an API that returns a list of objects",
+        "JSON to CSV, Header Row on",
+        "If Table has any value",
+        "Save File: Table, to a folder you pick",
+        "End If"
+      ],
+      "filter": "(.[0] | keys_unsorted) as $cols | ($cols | @csv), (.[] | [.[$cols[]]] | @csv)",
+      "sampleInput": "[\n  {\n    \"name\": \"Ana\",\n    \"city\": \"Lisbon\",\n    \"age\": 31\n  },\n  {\n    \"name\": \"Ben\",\n    \"city\": \"Oslo\",\n    \"age\": 27\n  },\n  {\n    \"name\": \"Chloé\",\n    \"city\": \"Lyon\",\n    \"age\": 45\n  }\n]",
+      "outputMode": "rawLines",
+      "valuesToChange": [
+        "The URL",
+        "Columns, if you only want some keys"
+      ],
+      "expected": [
+        "\"\\\"name\\\",\\\"city\\\",\\\"age\\\"\"",
+        "\"\\\"Ana\\\",\\\"Lisbon\\\",31\"",
+        "\"\\\"Ben\\\",\\\"Oslo\\\",27\"",
+        "\"\\\"Chloé\\\",\\\"Lyon\\\",45\""
+      ],
+      "filterNote": "The JSON to CSV action makes the table without a filter. This filter builds the same CSV, so you can try it in the Playground."
+    },
+    {
+      "id": "export-analysis",
+      "title": "Data export analysis",
+      "summary": "Count plays per artist in a large music streaming export.",
+      "steps": [
+        "Get File: your streaming history JSON from Files",
+        "Run JSON Filter with the filter below, Run in App on",
+        "If Filter Results has any value",
+        "Show Result: Filter Results",
+        "End If"
+      ],
+      "filter": "group_by(.artist) | map({artist: .[0].artist, plays: length}) | sort_by(-.plays)",
+      "sampleInput": "[\n  {\n    \"artist\": \"Nils Frahm\",\n    \"track\": \"Says\",\n    \"ms\": 512000\n  },\n  {\n    \"artist\": \"Ólafur Arnalds\",\n    \"track\": \"Saman\",\n    \"ms\": 199000\n  },\n  {\n    \"artist\": \"Nils Frahm\",\n    \"track\": \"Re\",\n    \"ms\": 345000\n  },\n  {\n    \"artist\": \"Hania Rani\",\n    \"track\": \"Eden\",\n    \"ms\": 241000\n  },\n  {\n    \"artist\": \"Nils Frahm\",\n    \"track\": \"Ambre\",\n    \"ms\": 263000\n  },\n  {\n    \"artist\": \"Ólafur Arnalds\",\n    \"track\": \"Near Light\",\n    \"ms\": 330000\n  }\n]",
+      "outputMode": "itemPerResult",
+      "valuesToChange": [
+        "The file",
+        "The field names, which depend on the service"
+      ],
+      "expected": [
+        "[{\"artist\":\"Nils Frahm\",\"plays\":3},{\"artist\":\"Ólafur Arnalds\",\"plays\":2},{\"artist\":\"Hania Rani\",\"plays\":1}]"
+      ]
+    },
+    {
+      "id": "webhook-cleanup",
+      "title": "Webhook cleanup",
+      "summary": "Strip a webhook payload down to three fields before passing it on.",
+      "steps": [
+        "Receive the payload, for example as the shortcut's input",
+        "Run JSON Filter with the filter below, output Compact JSON",
+        "If Filter Results has any value",
+        "Get Contents of URL: your next service, Method POST, Request Body File: Filter Results",
+        "End If"
+      ],
+      "filter": "{id, name, status}",
+      "sampleInput": "{\n  \"id\": \"evt_8812\",\n  \"type\": \"issue.updated\",\n  \"name\": \"Login button misaligned\",\n  \"status\": \"in_progress\",\n  \"assignee\": {\n    \"login\": \"grace\",\n    \"id\": 2\n  },\n  \"labels\": [\n    \"ui\",\n    \"bug\"\n  ],\n  \"created_at\": \"2026-10-01T09:15:00Z\",\n  \"raw\": {\n    \"source\": \"tracker\",\n    \"version\": 3\n  }\n}",
+      "outputMode": "compactJSON",
+      "valuesToChange": [
+        "The field names to keep",
+        "The URL of the next service"
+      ],
+      "expected": [
+        "{\"id\":\"evt_8812\",\"name\":\"Login button misaligned\",\"status\":\"in_progress\"}"
+      ]
+    },
+    {
+      "id": "folder-of-json",
+      "title": "Folder of JSON files",
+      "summary": "Run one filter over every JSON file in a folder and combine the results.",
+      "steps": [
+        "Get Contents of Folder: the folder with your JSON files",
+        "Repeat with Each item in Contents of Folder",
+        "Run JSON Filter on Repeat Item with the filter below, output Raw text lines",
+        "End Repeat",
+        "Combine Repeat Results with New Lines",
+        "If Combined Text has any value",
+        "Show Result: Combined Text",
+        "End If"
+      ],
+      "filter": "\"\\(.name): \\(.rows) rows\"",
+      "sampleInput": "{\n  \"name\": \"report-2026-09.json\",\n  \"rows\": 1204\n}",
+      "outputMode": "rawLines",
+      "valuesToChange": [
+        "The folder",
+        "The filter, to match your files"
+      ],
+      "expected": [
+        "\"report-2026-09.json: 1204 rows\""
+      ]
+    }
+  ]
+}

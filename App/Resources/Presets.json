@@ -1,0 +1,115 @@
+{
+  "sample": {
+    "filter": ".items[] | select(.inStock) | \"\\(.title) by \\(.author)\"",
+    "input": "{\n  \"store\": \"Corner Books\",\n  \"items\": [\n    {\n      \"title\": \"Dune\",\n      \"author\": \"Frank Herbert\",\n      \"price\": 9.99,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Emma\",\n      \"author\": \"Jane Austen\",\n      \"price\": 7.5,\n      \"inStock\": false,\n      \"tags\": [\n        \"romance\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Neuromancer\",\n      \"author\": \"William Gibson\",\n      \"price\": 8.25,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"cyberpunk\"\n      ]\n    }\n  ]\n}",
+    "outputMode": "itemPerResult",
+    "expected": [
+      "\"Dune by Frank Herbert\"",
+      "\"Neuromancer by William Gibson\""
+    ]
+  },
+  "presets": [
+    {
+      "id": "pick-keys",
+      "name": "Pick keys",
+      "summary": "Keep only the keys you need from each object in a list.",
+      "filter": "map({name, email})",
+      "outputMode": "itemPerResult",
+      "input": "[\n  {\n    \"id\": 1,\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"role\": \"admin\",\n    \"active\": true\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Grace Hopper\",\n    \"email\": \"grace@example.com\",\n    \"role\": \"editor\",\n    \"active\": true\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Alan Turing\",\n    \"email\": \"alan@example.com\",\n    \"role\": \"viewer\",\n    \"active\": false\n  }\n]",
+      "expected": [
+        "[{\"name\":\"Ada Lovelace\",\"email\":\"ada@example.com\"},{\"name\":\"Grace Hopper\",\"email\":\"grace@example.com\"},{\"name\":\"Alan Turing\",\"email\":\"alan@example.com\"}]"
+      ]
+    },
+    {
+      "id": "rename-keys",
+      "name": "Rename keys",
+      "summary": "Give keys new names. A key written on its own keeps its name.",
+      "filter": "map({id, fullName: .name, mail: .email})",
+      "outputMode": "itemPerResult",
+      "input": "[\n  {\n    \"id\": 1,\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"role\": \"admin\",\n    \"active\": true\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Grace Hopper\",\n    \"email\": \"grace@example.com\",\n    \"role\": \"editor\",\n    \"active\": true\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Alan Turing\",\n    \"email\": \"alan@example.com\",\n    \"role\": \"viewer\",\n    \"active\": false\n  }\n]",
+      "expected": [
+        "[{\"id\":1,\"fullName\":\"Ada Lovelace\",\"mail\":\"ada@example.com\"},{\"id\":2,\"fullName\":\"Grace Hopper\",\"mail\":\"grace@example.com\"},{\"id\":3,\"fullName\":\"Alan Turing\",\"mail\":\"alan@example.com\"}]"
+      ]
+    },
+    {
+      "id": "sort-by",
+      "name": "Sort by",
+      "summary": "Sort a list of objects by one field. Add | reverse for highest first.",
+      "filter": "sort_by(.price) | map(\"\\(.title): \\(.price)\")",
+      "outputMode": "itemPerResult",
+      "input": "[\n  {\n    \"title\": \"Notebook\",\n    \"price\": 4.5,\n    \"stock\": 120\n  },\n  {\n    \"title\": \"Fountain Pen\",\n    \"price\": 38,\n    \"stock\": 7\n  },\n  {\n    \"title\": \"Desk Lamp\",\n    \"price\": 24.99,\n    \"stock\": 0\n  },\n  {\n    \"title\": \"Sticky Notes\",\n    \"price\": 2.25,\n    \"stock\": 300\n  }\n]",
+      "expected": [
+        "[\"Sticky Notes: 2.25\",\"Notebook: 4.5\",\"Desk Lamp: 24.99\",\"Fountain Pen: 38\"]"
+      ]
+    },
+    {
+      "id": "group-and-count",
+      "name": "Group and count",
+      "summary": "Group objects by a field and count each group.",
+      "filter": "group_by(.status) | map({status: .[0].status, count: length})",
+      "outputMode": "itemPerResult",
+      "input": "[\n  {\n    \"id\": \"A-100\",\n    \"status\": \"shipped\",\n    \"total\": 25\n  },\n  {\n    \"id\": \"A-101\",\n    \"status\": \"pending\",\n    \"total\": 12.5\n  },\n  {\n    \"id\": \"A-102\",\n    \"status\": \"shipped\",\n    \"total\": 40\n  },\n  {\n    \"id\": \"A-103\",\n    \"status\": \"cancelled\",\n    \"total\": 8\n  },\n  {\n    \"id\": \"A-104\",\n    \"status\": \"pending\",\n    \"total\": 19.99\n  }\n]",
+      "expected": [
+        "[{\"status\":\"cancelled\",\"count\":1},{\"status\":\"pending\",\"count\":2},{\"status\":\"shipped\",\"count\":2}]"
+      ]
+    },
+    {
+      "id": "unique-by",
+      "name": "Unique by",
+      "summary": "Keep the first object for each value of a field, sorted by that field.",
+      "filter": "unique_by(.email)",
+      "outputMode": "itemPerResult",
+      "input": "[\n  {\n    \"name\": \"Maria\",\n    \"email\": \"maria@example.com\"\n  },\n  {\n    \"name\": \"Maria G.\",\n    \"email\": \"maria@example.com\"\n  },\n  {\n    \"name\": \"Sam\",\n    \"email\": \"sam@example.com\"\n  }\n]",
+      "expected": [
+        "[{\"name\":\"Maria\",\"email\":\"maria@example.com\"},{\"name\":\"Sam\",\"email\":\"sam@example.com\"}]"
+      ]
+    },
+    {
+      "id": "flatten",
+      "name": "Flatten",
+      "summary": "Turn a list of lists into one list.",
+      "filter": "map(.tags) | flatten | unique",
+      "outputMode": "itemPerResult",
+      "input": "[\n  {\n    \"title\": \"Hello\",\n    \"tags\": [\n      \"intro\",\n      \"news\"\n    ]\n  },\n  {\n    \"title\": \"Release notes\",\n    \"tags\": [\n      \"news\",\n      \"release\"\n    ]\n  },\n  {\n    \"title\": \"Tips\",\n    \"tags\": [\n      \"howto\"\n    ]\n  }\n]",
+      "expected": [
+        "[\"howto\",\"intro\",\"news\",\"release\"]"
+      ]
+    },
+    {
+      "id": "merge-objects",
+      "name": "Merge objects",
+      "summary": "Merge a list of objects into one. Later values win, and nested objects merge too.",
+      "filter": "reduce .[] as $item ({}; . * $item)",
+      "outputMode": "itemPerResult",
+      "input": "[\n  {\n    \"theme\": \"dark\",\n    \"font\": {\n      \"size\": 12\n    }\n  },\n  {\n    \"font\": {\n      \"family\": \"Menlo\"\n    }\n  },\n  {\n    \"theme\": \"light\",\n    \"sync\": true\n  }\n]",
+      "expected": [
+        "{\"theme\":\"light\",\"font\":{\"size\":12,\"family\":\"Menlo\"},\"sync\":true}"
+      ]
+    },
+    {
+      "id": "extract-key",
+      "name": "Extract all values for a key",
+      "summary": "Find every value of a key, at any depth.",
+      "filter": "[.. | objects | select(has(\"id\")) | .id]",
+      "outputMode": "itemPerResult",
+      "input": "{\n  \"id\": \"root\",\n  \"children\": [\n    {\n      \"id\": \"a\",\n      \"children\": [\n        {\n          \"id\": \"a1\"\n        },\n        {\n          \"id\": \"a2\"\n        }\n      ]\n    },\n    {\n      \"id\": \"b\",\n      \"meta\": {\n        \"owner\": {\n          \"id\": \"u-7\"\n        }\n      }\n    }\n  ]\n}",
+      "expected": [
+        "[\"root\",\"a\",\"a1\",\"a2\",\"b\",\"u-7\"]"
+      ]
+    },
+    {
+      "id": "array-to-csv",
+      "name": "Array of objects to CSV",
+      "summary": "One CSV line per object, with a header row from the first object's keys.",
+      "filter": "(.[0] | keys_unsorted) as $cols\n| ($cols | @csv), (.[] | [.[$cols[]]] | @csv)",
+      "outputMode": "rawLines",
+      "input": "[\n  {\n    \"name\": \"Ana\",\n    \"city\": \"Lisbon\",\n    \"age\": 31\n  },\n  {\n    \"name\": \"Ben\",\n    \"city\": \"Oslo\",\n    \"age\": 27\n  },\n  {\n    \"name\": \"Chloé\",\n    \"city\": \"Lyon\",\n    \"age\": 45\n  }\n]",
+      "expected": [
+        "\"\\\"name\\\",\\\"city\\\",\\\"age\\\"\"",
+        "\"\\\"Ana\\\",\\\"Lisbon\\\",31\"",
+        "\"\\\"Ben\\\",\\\"Oslo\\\",27\"",
+        "\"\\\"Chloé\\\",\\\"Lyon\\\",45\""
+      ]
+    }
+  ]
+}

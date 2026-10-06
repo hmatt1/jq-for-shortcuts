@@ -1,0 +1,942 @@
+{
+  "sections": [
+    {
+      "title": "Basics",
+      "entries": [
+        {
+          "id": "identity",
+          "title": "Return the input",
+          "filter": ".",
+          "explanation": "Returns the input unchanged.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "{\"name\":\"Ada\",\"langs\":[\"en\",\"fr\"],\"age\":36,\"address\":{\"city\":\"London\",\"zip\":null}}"
+          ]
+        },
+        {
+          "id": "field",
+          "title": "Get a field",
+          "filter": ".name",
+          "explanation": "The value of a key. A missing key gives null.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"Ada\""
+          ]
+        },
+        {
+          "id": "nested-field",
+          "title": "Get a nested field",
+          "filter": ".address.city",
+          "explanation": "Chain keys with dots.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"London\""
+          ]
+        },
+        {
+          "id": "quoted-key",
+          "title": "Keys with spaces or symbols",
+          "filter": ".\"first name\"",
+          "explanation": "Put a key in quotes when it is not a plain word.",
+          "input": "{\n  \"first name\": \"Ada\",\n  \"last-name\": \"Lovelace\"\n}",
+          "expected": [
+            "\"Ada\""
+          ]
+        },
+        {
+          "id": "index",
+          "title": "Get a list item",
+          "filter": ".langs[0], .langs[-1]",
+          "explanation": "Indexes start at 0. Negative indexes count from the end.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"en\"",
+            "\"fr\""
+          ]
+        },
+        {
+          "id": "slice",
+          "title": "Get part of a list",
+          "filter": ".[2:5]",
+          "explanation": "Items from index 2 up to, but not including, 5.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "[4,1,5]"
+          ]
+        },
+        {
+          "id": "iterate",
+          "title": "Each item of a list",
+          "filter": ".langs[]",
+          "explanation": "Outputs every item as a separate result.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"en\"",
+            "\"fr\""
+          ]
+        },
+        {
+          "id": "optional-iterate",
+          "title": "Skip a missing list",
+          "filter": ".tags[]?",
+          "explanation": "The ? skips the error, so a missing list outputs nothing.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": []
+        },
+        {
+          "id": "pipe",
+          "title": "Chain filters",
+          "filter": ".address | .city",
+          "explanation": "The | sends each result into the next filter.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"London\""
+          ]
+        },
+        {
+          "id": "comma",
+          "title": "Several outputs",
+          "filter": ".name, .age",
+          "explanation": "A comma outputs the results of both filters.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"Ada\"",
+            "36"
+          ]
+        },
+        {
+          "id": "recurse",
+          "title": "Every value at any depth",
+          "filter": "[.. | numbers]",
+          "explanation": ".. walks the whole input; numbers keeps only numbers.",
+          "input": "{\n  \"store\": \"Corner Books\",\n  \"items\": [\n    {\n      \"title\": \"Dune\",\n      \"author\": \"Frank Herbert\",\n      \"price\": 9.99,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Emma\",\n      \"author\": \"Jane Austen\",\n      \"price\": 7.5,\n      \"inStock\": false,\n      \"tags\": [\n        \"romance\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Neuromancer\",\n      \"author\": \"William Gibson\",\n      \"price\": 8.25,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"cyberpunk\"\n      ]\n    }\n  ]\n}",
+          "expected": [
+            "[9.99,7.5,8.25]"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Build values",
+      "entries": [
+        {
+          "id": "object",
+          "title": "Build an object",
+          "filter": "{who: .name, city: .address.city}",
+          "explanation": "Pick and rename values into a new object.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "{\"who\":\"Ada\",\"city\":\"London\"}"
+          ]
+        },
+        {
+          "id": "object-shorthand",
+          "title": "Object shorthand",
+          "filter": "{name, age}",
+          "explanation": "A key on its own copies that key.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "{\"name\":\"Ada\",\"age\":36}"
+          ]
+        },
+        {
+          "id": "dynamic-key",
+          "title": "Use a value as a key",
+          "filter": "{(.name): .age}",
+          "explanation": "Parentheses around a key use its value.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "{\"Ada\":36}"
+          ]
+        },
+        {
+          "id": "array",
+          "title": "Collect results into a list",
+          "filter": "[.langs[] | ascii_upcase]",
+          "explanation": "Square brackets gather every result into one list.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "[\"EN\",\"FR\"]"
+          ]
+        },
+        {
+          "id": "interpolation",
+          "title": "Put values in text",
+          "filter": "\"\\(.name) is \\(.age)\"",
+          "explanation": "\\( ) inserts a value into a string.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"Ada is 36\""
+          ]
+        },
+        {
+          "id": "pick",
+          "title": "Keep nested fields",
+          "filter": "pick(.name, .address.city)",
+          "explanation": "pick keeps the paths you list and drops the rest.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "{\"name\":\"Ada\",\"address\":{\"city\":\"London\"}}"
+          ]
+        },
+        {
+          "id": "lookup",
+          "title": "Turn a list into a lookup",
+          "filter": "map({(.id | tostring): .name}) | add",
+          "explanation": "Builds one object keyed by id.",
+          "input": "[\n  {\n    \"id\": 1,\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"role\": \"admin\",\n    \"active\": true\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Grace Hopper\",\n    \"email\": \"grace@example.com\",\n    \"role\": \"editor\",\n    \"active\": true\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Alan Turing\",\n    \"email\": \"alan@example.com\",\n    \"role\": \"viewer\",\n    \"active\": false\n  }\n]",
+          "expected": [
+            "{\"1\":\"Ada Lovelace\",\"2\":\"Grace Hopper\",\"3\":\"Alan Turing\"}"
+          ]
+        },
+        {
+          "id": "tojson",
+          "title": "Turn a value into JSON text",
+          "filter": ".address | tojson",
+          "explanation": "Useful for logging or for JSON inside text.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"{\\\"city\\\":\\\"London\\\",\\\"zip\\\":null}\""
+          ]
+        },
+        {
+          "id": "fromjson",
+          "title": "Read JSON inside text",
+          "filter": ".payload | fromjson | .ok",
+          "explanation": "Parses a string that holds JSON.",
+          "input": "{\n  \"payload\": \"{\\\"ok\\\":true}\"\n}",
+          "expected": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Select and compare",
+      "entries": [
+        {
+          "id": "select",
+          "title": "Keep matching items",
+          "filter": ".[] | select(.price > 10) | .title",
+          "explanation": "select keeps an input only when the condition is true.",
+          "input": "[\n  {\n    \"title\": \"Notebook\",\n    \"price\": 4.5,\n    \"stock\": 120\n  },\n  {\n    \"title\": \"Fountain Pen\",\n    \"price\": 38,\n    \"stock\": 7\n  },\n  {\n    \"title\": \"Desk Lamp\",\n    \"price\": 24.99,\n    \"stock\": 0\n  },\n  {\n    \"title\": \"Sticky Notes\",\n    \"price\": 2.25,\n    \"stock\": 300\n  }\n]",
+          "expected": [
+            "\"Fountain Pen\"",
+            "\"Desk Lamp\""
+          ]
+        },
+        {
+          "id": "select-and",
+          "title": "Combine conditions",
+          "filter": "map(select(.price < 30 and .stock > 0)) | length",
+          "explanation": "and, or and not combine conditions.",
+          "input": "[\n  {\n    \"title\": \"Notebook\",\n    \"price\": 4.5,\n    \"stock\": 120\n  },\n  {\n    \"title\": \"Fountain Pen\",\n    \"price\": 38,\n    \"stock\": 7\n  },\n  {\n    \"title\": \"Desk Lamp\",\n    \"price\": 24.99,\n    \"stock\": 0\n  },\n  {\n    \"title\": \"Sticky Notes\",\n    \"price\": 2.25,\n    \"stock\": 300\n  }\n]",
+          "expected": [
+            "2"
+          ]
+        },
+        {
+          "id": "if",
+          "title": "If, then, else",
+          "filter": ".[] | if .stock == 0 then \"\\(.title): sold out\" else \"\\(.title): \\(.stock)\" end",
+          "explanation": "Every if needs an else (or elif) and an end.",
+          "input": "[\n  {\n    \"title\": \"Notebook\",\n    \"price\": 4.5,\n    \"stock\": 120\n  },\n  {\n    \"title\": \"Fountain Pen\",\n    \"price\": 38,\n    \"stock\": 7\n  },\n  {\n    \"title\": \"Desk Lamp\",\n    \"price\": 24.99,\n    \"stock\": 0\n  },\n  {\n    \"title\": \"Sticky Notes\",\n    \"price\": 2.25,\n    \"stock\": 300\n  }\n]",
+          "expected": [
+            "\"Notebook: 120\"",
+            "\"Fountain Pen: 7\"",
+            "\"Desk Lamp: sold out\"",
+            "\"Sticky Notes: 300\""
+          ]
+        },
+        {
+          "id": "alternative",
+          "title": "Default for missing values",
+          "filter": ".nickname // .name, .zip // \"none\"",
+          "explanation": "// uses the right side when the left is null, false or missing.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"zip\": null\n}",
+          "expected": [
+            "\"Ada\"",
+            "\"none\""
+          ]
+        },
+        {
+          "id": "has",
+          "title": "Check that a key exists",
+          "filter": "has(\"age\"), has(\"email\")",
+          "explanation": "true when the object has the key, even when its value is null.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "true",
+            "false"
+          ]
+        },
+        {
+          "id": "contains",
+          "title": "Check containment",
+          "filter": ".langs | contains([\"fr\"])",
+          "explanation": "true when every part of the argument is inside the input.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "true"
+          ]
+        },
+        {
+          "id": "case-insensitive",
+          "title": "Search text without case",
+          "filter": "map(select(.name | ascii_downcase | contains(\"gr\")))",
+          "explanation": "Lowercase both sides before comparing.",
+          "input": "[\n  {\n    \"id\": 1,\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"role\": \"admin\",\n    \"active\": true\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Grace Hopper\",\n    \"email\": \"grace@example.com\",\n    \"role\": \"editor\",\n    \"active\": true\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Alan Turing\",\n    \"email\": \"alan@example.com\",\n    \"role\": \"viewer\",\n    \"active\": false\n  }\n]",
+          "expected": [
+            "[{\"id\":2,\"name\":\"Grace Hopper\",\"email\":\"grace@example.com\",\"role\":\"editor\",\"active\":true}]"
+          ]
+        },
+        {
+          "id": "startswith",
+          "title": "Starts or ends with",
+          "filter": "map(select(startswith(\"https://\")))",
+          "explanation": "endswith checks the end the same way.",
+          "input": "[\n  \"https://a.example\",\n  \"http://b.example\",\n  \"https://c.example\"\n]",
+          "expected": [
+            "[\"https://a.example\",\"https://c.example\"]"
+          ]
+        },
+        {
+          "id": "any-all",
+          "title": "Any or all",
+          "filter": "map(.inStock) | any, all",
+          "explanation": "any is true if one item is true; all if every item is.",
+          "input": "[\n  {\n    \"title\": \"Dune\",\n    \"author\": \"Frank Herbert\",\n    \"price\": 9.99,\n    \"inStock\": true,\n    \"tags\": [\n      \"sci-fi\",\n      \"classic\"\n    ]\n  },\n  {\n    \"title\": \"Emma\",\n    \"author\": \"Jane Austen\",\n    \"price\": 7.5,\n    \"inStock\": false,\n    \"tags\": [\n      \"romance\",\n      \"classic\"\n    ]\n  },\n  {\n    \"title\": \"Neuromancer\",\n    \"author\": \"William Gibson\",\n    \"price\": 8.25,\n    \"inStock\": true,\n    \"tags\": [\n      \"sci-fi\",\n      \"cyberpunk\"\n    ]\n  }\n]",
+          "expected": [
+            "true",
+            "false"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lists",
+      "entries": [
+        {
+          "id": "map",
+          "title": "Change every item",
+          "filter": "map(. * 10)",
+          "explanation": "map runs a filter on each item and keeps the results in a list.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "[30,10,40,10,50,90,20,60]"
+          ]
+        },
+        {
+          "id": "length",
+          "title": "Count",
+          "filter": "length",
+          "explanation": "Items in a list, keys in an object, or characters in text.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "8"
+          ]
+        },
+        {
+          "id": "sort",
+          "title": "Sort and reverse",
+          "filter": "sort | reverse",
+          "explanation": "sort orders values; reverse flips the list.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "[9,6,5,4,3,2,1,1]"
+          ]
+        },
+        {
+          "id": "sort-by",
+          "title": "Sort objects by a field",
+          "filter": "sort_by(.age) | map(.name)",
+          "explanation": "Sorts by the value the filter returns. Use sort_by(-.age) for highest first.",
+          "input": "[\n  {\n    \"name\": \"Ana\",\n    \"city\": \"Lisbon\",\n    \"age\": 31\n  },\n  {\n    \"name\": \"Ben\",\n    \"city\": \"Oslo\",\n    \"age\": 27\n  },\n  {\n    \"name\": \"Chloé\",\n    \"city\": \"Lyon\",\n    \"age\": 45\n  }\n]",
+          "expected": [
+            "[\"Ben\",\"Ana\",\"Chloé\"]"
+          ]
+        },
+        {
+          "id": "group-by",
+          "title": "Group by a field",
+          "filter": "group_by(.status) | map({(.[0].status): length}) | add",
+          "explanation": "Groups items that share a value; length counts each group.",
+          "input": "[\n  {\n    \"id\": \"A-100\",\n    \"status\": \"shipped\",\n    \"total\": 25\n  },\n  {\n    \"id\": \"A-101\",\n    \"status\": \"pending\",\n    \"total\": 12.5\n  },\n  {\n    \"id\": \"A-102\",\n    \"status\": \"shipped\",\n    \"total\": 40\n  },\n  {\n    \"id\": \"A-103\",\n    \"status\": \"cancelled\",\n    \"total\": 8\n  },\n  {\n    \"id\": \"A-104\",\n    \"status\": \"pending\",\n    \"total\": 19.99\n  }\n]",
+          "expected": [
+            "{\"cancelled\":1,\"pending\":2,\"shipped\":2}"
+          ]
+        },
+        {
+          "id": "unique",
+          "title": "Remove duplicates",
+          "filter": "unique",
+          "explanation": "Sorted values without repeats. unique_by(f) compares by a field.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "[1,2,3,4,5,6,9]"
+          ]
+        },
+        {
+          "id": "min-max",
+          "title": "Smallest and largest",
+          "filter": "min_by(.price).title, max_by(.price).title",
+          "explanation": "min_by and max_by compare by a field.",
+          "input": "[\n  {\n    \"title\": \"Notebook\",\n    \"price\": 4.5,\n    \"stock\": 120\n  },\n  {\n    \"title\": \"Fountain Pen\",\n    \"price\": 38,\n    \"stock\": 7\n  },\n  {\n    \"title\": \"Desk Lamp\",\n    \"price\": 24.99,\n    \"stock\": 0\n  },\n  {\n    \"title\": \"Sticky Notes\",\n    \"price\": 2.25,\n    \"stock\": 300\n  }\n]",
+          "expected": [
+            "\"Sticky Notes\"",
+            "\"Fountain Pen\""
+          ]
+        },
+        {
+          "id": "add",
+          "title": "Sum or join",
+          "filter": "map(.total) | add",
+          "explanation": "add sums numbers, joins text and lists, and merges objects.",
+          "input": "[\n  {\n    \"id\": \"A-100\",\n    \"status\": \"shipped\",\n    \"total\": 25\n  },\n  {\n    \"id\": \"A-101\",\n    \"status\": \"pending\",\n    \"total\": 12.5\n  },\n  {\n    \"id\": \"A-102\",\n    \"status\": \"shipped\",\n    \"total\": 40\n  },\n  {\n    \"id\": \"A-103\",\n    \"status\": \"cancelled\",\n    \"total\": 8\n  },\n  {\n    \"id\": \"A-104\",\n    \"status\": \"pending\",\n    \"total\": 19.99\n  }\n]",
+          "expected": [
+            "105.49"
+          ]
+        },
+        {
+          "id": "average",
+          "title": "Average",
+          "filter": "map(.total) | add / length",
+          "explanation": "Divide the sum by the count.",
+          "input": "[\n  {\n    \"id\": \"A-100\",\n    \"status\": \"shipped\",\n    \"total\": 25\n  },\n  {\n    \"id\": \"A-101\",\n    \"status\": \"pending\",\n    \"total\": 12.5\n  },\n  {\n    \"id\": \"A-102\",\n    \"status\": \"shipped\",\n    \"total\": 40\n  },\n  {\n    \"id\": \"A-103\",\n    \"status\": \"cancelled\",\n    \"total\": 8\n  },\n  {\n    \"id\": \"A-104\",\n    \"status\": \"pending\",\n    \"total\": 19.99\n  }\n]",
+          "expected": [
+            "21.098"
+          ]
+        },
+        {
+          "id": "first-last",
+          "title": "First, last and limit",
+          "filter": "first, last, [limit(3; .[])]",
+          "explanation": "limit(n; f) keeps the first n results of f.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "3",
+            "6",
+            "[3,1,4]"
+          ]
+        },
+        {
+          "id": "index-of",
+          "title": "Find positions",
+          "filter": "index(1), indices(1)",
+          "explanation": "index gives the first position, indices every position.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "1",
+            "[1,3]"
+          ]
+        },
+        {
+          "id": "flatten",
+          "title": "Flatten nested lists",
+          "filter": "flatten, flatten(1)",
+          "explanation": "flatten(1) flattens one level only.",
+          "input": "[\n  1,\n  [\n    2,\n    [\n      3,\n      [\n        4\n      ]\n    ]\n  ]\n]",
+          "expected": [
+            "[1,2,3,4]",
+            "[1,2,[3,[4]]]"
+          ]
+        },
+        {
+          "id": "range",
+          "title": "Number sequences",
+          "filter": "[range(0; 10; 3)]",
+          "explanation": "range(from; upto; by) outputs numbers.",
+          "input": "null",
+          "expected": [
+            "[0,3,6,9]"
+          ]
+        },
+        {
+          "id": "remove-nulls",
+          "title": "Drop null items",
+          "filter": "map(select(. != null))",
+          "explanation": "select keeps the items that are not null.",
+          "input": "[\n  1,\n  null,\n  2,\n  null,\n  3\n]",
+          "expected": [
+            "[1,2,3]"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Objects",
+      "entries": [
+        {
+          "id": "keys",
+          "title": "List the keys",
+          "filter": "keys, keys_unsorted",
+          "explanation": "keys is sorted; keys_unsorted keeps the original order.",
+          "input": "{\n  \"b\": 1,\n  \"a\": 2,\n  \"c\": 3\n}",
+          "expected": [
+            "[\"a\",\"b\",\"c\"]",
+            "[\"b\",\"a\",\"c\"]"
+          ]
+        },
+        {
+          "id": "to-entries",
+          "title": "Keys and values as a list",
+          "filter": "to_entries | map(\"\\(.key)=\\(.value)\") | join(\"&\")",
+          "explanation": "to_entries gives {key, value} pairs; from_entries turns them back.",
+          "input": "{\n  \"q\": \"jq\",\n  \"page\": 2\n}",
+          "expected": [
+            "\"q=jq&page=2\""
+          ]
+        },
+        {
+          "id": "with-entries",
+          "title": "Change keys or values",
+          "filter": "with_entries(.value |= ascii_upcase)",
+          "explanation": "Runs a filter on each {key, value} pair.",
+          "input": "{\n  \"first\": \"ada\",\n  \"last\": \"lovelace\"\n}",
+          "expected": [
+            "{\"first\":\"ADA\",\"last\":\"LOVELACE\"}"
+          ]
+        },
+        {
+          "id": "map-values",
+          "title": "Change every value",
+          "filter": "map_values(. * 2)",
+          "explanation": "map_values keeps the keys and changes each value.",
+          "input": "{\n  \"apples\": 3,\n  \"pears\": 5\n}",
+          "expected": [
+            "{\"apples\":6,\"pears\":10}"
+          ]
+        },
+        {
+          "id": "drop-nulls",
+          "title": "Drop empty fields",
+          "filter": "with_entries(select(.value != null))",
+          "explanation": "Keeps the pairs whose value is not null.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"zip\": null,\n  \"city\": \"London\"\n}",
+          "expected": [
+            "{\"name\":\"Ada\",\"city\":\"London\"}"
+          ]
+        },
+        {
+          "id": "del",
+          "title": "Remove keys",
+          "filter": "del(.age, .address)",
+          "explanation": "Deletes paths and returns the rest.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "{\"name\":\"Ada\",\"langs\":[\"en\",\"fr\"]}"
+          ]
+        },
+        {
+          "id": "merge",
+          "title": "Merge two objects",
+          "filter": ".defaults + .overrides",
+          "explanation": "+ merges top-level keys; * merges nested objects too.",
+          "input": "{\n  \"defaults\": {\n    \"theme\": \"light\",\n    \"size\": 12\n  },\n  \"overrides\": {\n    \"theme\": \"dark\"\n  }\n}",
+          "expected": [
+            "{\"theme\":\"dark\",\"size\":12}"
+          ]
+        },
+        {
+          "id": "update",
+          "title": "Change a value in place",
+          "filter": ".items |= map(.price *= 2) | .items[0].price",
+          "explanation": "|= changes the value at a path and keeps everything else.",
+          "input": "{\n  \"store\": \"Corner Books\",\n  \"items\": [\n    {\n      \"title\": \"Dune\",\n      \"author\": \"Frank Herbert\",\n      \"price\": 9.99,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Emma\",\n      \"author\": \"Jane Austen\",\n      \"price\": 7.5,\n      \"inStock\": false,\n      \"tags\": [\n        \"romance\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Neuromancer\",\n      \"author\": \"William Gibson\",\n      \"price\": 8.25,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"cyberpunk\"\n      ]\n    }\n  ]\n}",
+          "expected": [
+            "19.98"
+          ]
+        },
+        {
+          "id": "increment",
+          "title": "Add to a value",
+          "filter": ".count += 1",
+          "explanation": "+=, -=, *= and /= update a number in place.",
+          "input": "{\n  \"count\": 41\n}",
+          "expected": [
+            "{\"count\":42}"
+          ]
+        },
+        {
+          "id": "walk",
+          "title": "Change every value at any depth",
+          "filter": "walk(if type == \"string\" then ascii_downcase else . end)",
+          "explanation": "walk runs a filter on every value, innermost first.",
+          "input": "{\n  \"Name\": \"ADA\",\n  \"Tags\": [\n    \"X\",\n    \"Y\"\n  ]\n}",
+          "expected": [
+            "{\"Name\":\"ada\",\"Tags\":[\"x\",\"y\"]}"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Text",
+      "entries": [
+        {
+          "id": "split-join",
+          "title": "Split and join",
+          "filter": "split(\", \") | join(\" / \")",
+          "explanation": "split cuts text at a separator; join glues a list back together.",
+          "input": "\"red, green, blue\"",
+          "expected": [
+            "\"red / green / blue\""
+          ]
+        },
+        {
+          "id": "case",
+          "title": "Change case",
+          "filter": "ascii_downcase, ascii_upcase",
+          "explanation": "Only the letters A to Z change.",
+          "input": "\"Hello Shortcuts\"",
+          "expected": [
+            "\"hello shortcuts\"",
+            "\"HELLO SHORTCUTS\""
+          ]
+        },
+        {
+          "id": "trim-prefix",
+          "title": "Remove a prefix or suffix",
+          "filter": "ltrimstr(\"#\") | rtrimstr(\".json\")",
+          "explanation": "Text without that start or end stays the same.",
+          "input": "\"#report.json\"",
+          "expected": [
+            "\"report\""
+          ]
+        },
+        {
+          "id": "test",
+          "title": "Match a pattern",
+          "filter": ".[] | select(test(\"^[a-z]+@example\\\\.com$\"))",
+          "explanation": "test is true when the regular expression matches.",
+          "input": "[\n  \"ada@example.com\",\n  \"bob@test.org\",\n  \"grace@example.com\"\n]",
+          "expected": [
+            "\"ada@example.com\"",
+            "\"grace@example.com\""
+          ]
+        },
+        {
+          "id": "capture",
+          "title": "Pull out named parts",
+          "filter": "capture(\"(?<user>[^@]+)@(?<domain>.+)\")",
+          "explanation": "Named groups become keys of an object.",
+          "input": "\"ada@example.com\"",
+          "expected": [
+            "{\"user\":\"ada\",\"domain\":\"example.com\"}"
+          ]
+        },
+        {
+          "id": "sub-gsub",
+          "title": "Replace text",
+          "filter": "sub(\"cat\"; \"dog\"), gsub(\"cat\"; \"dog\")",
+          "explanation": "sub replaces the first match, gsub every match.",
+          "input": "\"cat sat with cat\"",
+          "expected": [
+            "\"dog sat with cat\"",
+            "\"dog sat with dog\""
+          ]
+        },
+        {
+          "id": "scan",
+          "title": "Find every match",
+          "filter": "[scan(\"[0-9]+\")]",
+          "explanation": "scan outputs each match of a pattern.",
+          "input": "\"Order 66, table 12\"",
+          "expected": [
+            "[\"66\",\"12\"]"
+          ]
+        },
+        {
+          "id": "match",
+          "title": "Match details",
+          "filter": "[match(\"[0-9]+\"; \"g\") | {offset, string}]",
+          "explanation": "match gives positions and groups; the \"g\" flag finds every match.",
+          "input": "\"Order 66, table 12\"",
+          "expected": [
+            "[{\"offset\":6,\"string\":\"66\"},{\"offset\":16,\"string\":\"12\"}]"
+          ]
+        },
+        {
+          "id": "ignore-case-flag",
+          "title": "Ignore case in a pattern",
+          "filter": "test(\"hello\"; \"i\")",
+          "explanation": "The \"i\" flag ignores case; \"x\" allows spaces in the pattern.",
+          "input": "\"Hello World\"",
+          "expected": [
+            "true"
+          ]
+        },
+        {
+          "id": "tostring-tonumber",
+          "title": "Convert types",
+          "filter": "(.count | tonumber + 1), (.id | tostring)",
+          "explanation": "tonumber reads text as a number; tostring prints any value as text.",
+          "input": "{\n  \"count\": \"41\",\n  \"id\": 7\n}",
+          "expected": [
+            "42",
+            "\"7\""
+          ]
+        },
+        {
+          "id": "length-text",
+          "title": "Text length",
+          "filter": "length, utf8bytelength",
+          "explanation": "length counts characters; utf8bytelength counts bytes.",
+          "input": "\"Zürich\"",
+          "expected": [
+            "6",
+            "7"
+          ]
+        },
+        {
+          "id": "format",
+          "title": "Escape for CSV, URLs and more",
+          "filter": "@csv, @tsv, @uri \"q=\\(.[0])\", @base64 \"\\(.[0])\"",
+          "explanation": "@ formats escape values for a target format.",
+          "input": "[\n  \"a,b\",\n  \"c d\"\n]",
+          "expected": [
+            "\"\\\"a,b\\\",\\\"c d\\\"\"",
+            "\"a,b\\tc d\"",
+            "\"q=a%2Cb\"",
+            "\"YSxi\""
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Numbers",
+      "entries": [
+        {
+          "id": "round",
+          "title": "Round numbers",
+          "filter": "map(round), map(floor), map(ceil)",
+          "explanation": "round goes to the nearest whole number; floor down; ceil up.",
+          "input": "[\n  1.25,\n  2.5,\n  -3.7\n]",
+          "expected": [
+            "[1,3,-4]",
+            "[1,2,-4]",
+            "[2,3,-3]"
+          ]
+        },
+        {
+          "id": "decimals",
+          "title": "Round to two decimals",
+          "filter": "map(. * 100 | round / 100)",
+          "explanation": "Multiply, round, then divide.",
+          "input": "[\n  3.14159,\n  2.71828\n]",
+          "expected": [
+            "[3.14,2.72]"
+          ]
+        },
+        {
+          "id": "big-ids",
+          "title": "Large IDs keep their digits",
+          "filter": ".id, (.id | tostring)",
+          "explanation": "A number passed through unchanged keeps every digit.",
+          "input": "{\n  \"id\": 1234567890123456789\n}",
+          "expected": [
+            "1234567890123456789",
+            "\"1234567890123456789\""
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Dates",
+      "entries": [
+        {
+          "id": "fromdate",
+          "title": "ISO date to seconds",
+          "filter": ".created | fromdate",
+          "explanation": "fromdate reads ISO 8601 dates in UTC, like 2026-10-05T12:00:00Z.",
+          "input": "{\n  \"created\": \"2026-10-05T12:00:00Z\"\n}",
+          "expected": [
+            "1791201600"
+          ]
+        },
+        {
+          "id": "todate",
+          "title": "Seconds to ISO date",
+          "filter": ".ts | todate",
+          "explanation": "todate writes seconds since 1970 as an ISO 8601 date in UTC.",
+          "input": "{\n  \"ts\": 1780000000\n}",
+          "expected": [
+            "\"2026-05-28T20:26:40Z\""
+          ]
+        },
+        {
+          "id": "strftime",
+          "title": "Format a date",
+          "filter": ".created | fromdate | strftime(\"%d %b %Y, %H:%M\")",
+          "explanation": "strftime formats a date in UTC using % codes.",
+          "input": "{\n  \"created\": \"2026-10-05T12:30:00Z\"\n}",
+          "expected": [
+            "\"05 Oct 2026, 12:30\""
+          ]
+        },
+        {
+          "id": "strptime",
+          "title": "Read a custom date format",
+          "filter": ".day | strptime(\"%d/%m/%Y\") | mktime | todate",
+          "explanation": "strptime reads text with % codes; mktime turns it into seconds.",
+          "input": "{\n  \"day\": \"05/10/2026\"\n}",
+          "expected": [
+            "\"2026-10-05T00:00:00Z\""
+          ]
+        },
+        {
+          "id": "date-diff",
+          "title": "Days between dates",
+          "filter": "((.end | fromdate) - (.start | fromdate)) / 86400",
+          "explanation": "Subtract the seconds, then divide by the seconds in a day.",
+          "input": "{\n  \"start\": \"2026-10-01T00:00:00Z\",\n  \"end\": \"2026-10-15T00:00:00Z\"\n}",
+          "expected": [
+            "14"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Variables and arguments",
+      "entries": [
+        {
+          "id": "as",
+          "title": "Name a value",
+          "filter": ".store as $s | .items[] | \"\\($s): \\(.title)\"",
+          "explanation": "as $name keeps a value for later in the filter.",
+          "input": "{\n  \"store\": \"Corner Books\",\n  \"items\": [\n    {\n      \"title\": \"Dune\",\n      \"author\": \"Frank Herbert\",\n      \"price\": 9.99,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Emma\",\n      \"author\": \"Jane Austen\",\n      \"price\": 7.5,\n      \"inStock\": false,\n      \"tags\": [\n        \"romance\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Neuromancer\",\n      \"author\": \"William Gibson\",\n      \"price\": 8.25,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"cyberpunk\"\n      ]\n    }\n  ]\n}",
+          "expected": [
+            "\"Corner Books: Dune\"",
+            "\"Corner Books: Emma\"",
+            "\"Corner Books: Neuromancer\""
+          ]
+        },
+        {
+          "id": "argument",
+          "title": "Use an argument from Shortcuts",
+          "filter": ".items[:$limit] | map(.title)",
+          "explanation": "Each key in Arguments becomes a $variable. Here Arguments is {\"limit\": 2}.",
+          "input": "{\n  \"store\": \"Corner Books\",\n  \"items\": [\n    {\n      \"title\": \"Dune\",\n      \"author\": \"Frank Herbert\",\n      \"price\": 9.99,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Emma\",\n      \"author\": \"Jane Austen\",\n      \"price\": 7.5,\n      \"inStock\": false,\n      \"tags\": [\n        \"romance\",\n        \"classic\"\n      ]\n    },\n    {\n      \"title\": \"Neuromancer\",\n      \"author\": \"William Gibson\",\n      \"price\": 8.25,\n      \"inStock\": true,\n      \"tags\": [\n        \"sci-fi\",\n        \"cyberpunk\"\n      ]\n    }\n  ]\n}",
+          "expected": [
+            "[\"Dune\",\"Emma\"]"
+          ],
+          "arguments": "{\"limit\": 2}"
+        },
+        {
+          "id": "reduce",
+          "title": "Accumulate",
+          "filter": "reduce .[] as $n (0; . + $n)",
+          "explanation": "reduce folds a list into one value.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "31"
+          ]
+        },
+        {
+          "id": "def",
+          "title": "Define a function",
+          "filter": "def double: . * 2; map(double)",
+          "explanation": "def names a filter you can reuse.",
+          "input": "[\n  3,\n  1,\n  4,\n  1,\n  5,\n  9,\n  2,\n  6\n]",
+          "expected": [
+            "[6,2,8,2,10,18,4,12]"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Paths and errors",
+      "entries": [
+        {
+          "id": "paths",
+          "title": "List every path",
+          "filter": "[paths(type == \"number\")]",
+          "explanation": "paths(f) gives the path to every value where f is true.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "[[\"age\"]]"
+          ]
+        },
+        {
+          "id": "getpath",
+          "title": "Read and write by path",
+          "filter": "getpath([\"address\", \"city\"]), (setpath([\"age\"]; 37) | .age)",
+          "explanation": "Paths are lists of keys and indexes.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "\"London\"",
+            "37"
+          ]
+        },
+        {
+          "id": "try",
+          "title": "Catch errors",
+          "filter": ".[] | try tonumber catch \"not a number: \\(.)\"",
+          "explanation": "try runs a filter, and catch handles its error.",
+          "input": "[\n  \"12\",\n  \"x\",\n  \"3.5\"\n]",
+          "expected": [
+            "12",
+            "\"not a number: Invalid numeric literal at EOF at line 1, column 1 (while parsing 'x')\"",
+            "3.5"
+          ]
+        },
+        {
+          "id": "error",
+          "title": "Fail on purpose",
+          "filter": "if .age < 0 then error(\"age cannot be negative\") else .age end",
+          "explanation": "error stops the filter with your message.",
+          "input": "{\n  \"age\": 36\n}",
+          "expected": [
+            "36"
+          ]
+        },
+        {
+          "id": "debug",
+          "title": "Show a value while testing",
+          "filter": ".langs | debug | length",
+          "explanation": "debug shows the value in the Playground's Debug area and passes it on.",
+          "input": "{\n  \"name\": \"Ada\",\n  \"langs\": [\n    \"en\",\n    \"fr\"\n  ],\n  \"age\": 36,\n  \"address\": {\n    \"city\": \"London\",\n    \"zip\": null\n  }\n}",
+          "expected": [
+            "2"
+          ],
+          "debug": [
+            "[\"DEBUG:\",[\"en\",\"fr\"]]"
+          ]
+        }
+      ]
+    }
+  ],
+  "differences": [
+    {
+      "title": "Engine",
+      "detail": "Filters run on a Swift engine built for this app, which follows jq 1.7.1. Each build is checked against jq 1.7.1's own test suite and more than 1,300 filters whose output was recorded from real jq 1.7.1. Filters written for jq 1.7 behave the same way."
+    },
+    {
+      "title": "Files and the environment are off",
+      "detail": "input, inputs, input_filename, env, $ENV, include, import, modulemeta, get_search_list, get_prog_origin and get_jq_origin are removed, so a filter cannot read files or environment variables. A filter that uses one stops with an error that names it. Turn on Slurp to see every input value at once, and use Arguments to pass values in. builtins does not list the removed functions, and input_line_number always returns 0."
+    },
+    {
+      "title": "Limits",
+      "detail": "Every run stops at its timeout and at a memory limit, and very deep recursion stops with an error instead of crashing. A regular expression that backtracks on long text stops at the timeout."
+    },
+    {
+      "title": "Regular expressions",
+      "detail": "jq uses the Oniguruma library; this app uses ICU, the library behind Apple's regular expressions. The patterns on this cheat sheet and jq's own regex tests work the same in both. Rarely used syntax can differ, so try a complex pattern in the Playground before you rely on it."
+    },
+    {
+      "title": "halt_error, debug and stderr",
+      "detail": "halt ends the run and keeps the results so far. halt_error stops the action with its message as the error text. debug and stderr appear in the Playground's Debug area, and Shortcuts ignores them."
+    },
+    {
+      "title": "Results in Shortcuts",
+      "detail": "Shortcuts receives every result as Text. Objects and lists arrive as JSON text, which Get Dictionary Value and the other dictionary actions read directly. Numbers, true, false and null arrive as their JSON text. With One item per result, a single list result is split into its items."
+    },
+    {
+      "title": "Dates",
+      "detail": "strftime, strptime, mktime, gmtime, todate and fromdate work in UTC, as in jq. localtime and strflocaltime use the time zone of your device."
+    },
+    {
+      "title": "Error messages",
+      "detail": "Errors are reworded to name the position or value involved and a next step. The text jq prints, such as Cannot iterate over null, is still part of each message."
+    }
+  ]
+}
