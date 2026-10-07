@@ -183,7 +183,7 @@ final class FilterRunnerTests: XCTestCase {
 
     func testCancellingTheTaskStopsTheRun() async {
         let started = Date()
-        let task = Task { await self.run("[range(1e12)] | length", "null", timeout: 60) }
+        let task = Task { await self.run("range(1e12) | empty", "null", timeout: 60) }
         try? await Task.sleep(nanoseconds: 200_000_000)
         task.cancel()
         let outcome = await task.value
