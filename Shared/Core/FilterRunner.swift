@@ -67,7 +67,11 @@ enum FilterRunner {
         }
         let compiled: JQFilter
         do {
-            compiled = try JQFilter(request.filter, argumentNames: arguments.keys.sorted())
+            // The parser recurses per nesting level; the Swift concurrency
+            // pool's 512 KB stacks overflow on it, so compile on the engine thread.
+            let source = request.filter
+            let argumentNames = arguments.keys.sorted()
+            compiled = try await JQThread.run { try JQFilter(source, argumentNames: argumentNames) }
         } catch let error as JQCompileError {
             return .failure(FilterErrorMapper.compile(error, source: request.filter))
         } catch {
