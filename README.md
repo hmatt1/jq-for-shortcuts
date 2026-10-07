@@ -154,6 +154,96 @@ The script prints the first five, with `gh secret set` commands:
 
 Delete `.signing/` afterwards. It holds a private key and is in `.gitignore`.
 
+#### How these secrets were actually set up (a recipe for the next app)
+
+GitHub never shows a secret's value again, so the secrets in another repository can't be copied with `gh`. They can only be re-created, or copied by a workflow that runs *inside* the repository that holds them. This project did the second, from `hmatt1/ios-shortcut-launcher-widget`, which already had the API key and a Distribution certificate. The same steps work for any new app.
+
+**What you need to know first**
+
+- **App IDs are explicit**, one per target: `com.hmatt1.jqforshortcuts`, `.ShareExtension`, `.Controls`. A wildcard (`com.hmatt1.*`) cannot use App Groups. The `group.` prefix belongs only to the App Group identifier, never to a bundle ID.
+- **The only capability is App Groups.** All three targets' `.entitlements` files contain just `com.apple.security.application-groups`. The long *Capability Requests* list in the Developer Portal (CarPlay, DriverKit, Family Controls and so on) is for restricted entitlements Apple approves case by case. Ignore it unless the app uses one.
+- **The App Group must be assigned by hand**, even though the script turns the capability on. In the portal: Identifiers, App Groups, register `group.com.hmatt1.jqforshortcuts`. Then for each App ID open it, App Groups, **Configure**, tick the group, Save. Ticking the capability box alone is not enough: profiles made without the group fail the script's check.
+- **An account may hold only two Distribution certificates.** Creating a third fails with `409 You already have a current Distribution certificate or a pending certificate request`. One certificate signs every app on the account, so reuse an existing one instead of minting another (below). Check what exists under Certificates in the portal, or with `python3 Tools/setup-signing.py`, which lists them.
+- **One App Store Connect API key serves every repository.** The three secrets `ADMIN_APPSTORE_KEY_ID`, `APPSTORE_ISSUER_ID` and `ADMIN_APPSTORE_P8_KEY` are the same in all of them. The key needs the Admin role to create profiles. If the `.p8` is lost, Apple cannot re-issue it: create a new key under Users and Access, Integrations.
+- **The profiles are per app.** Each app needs its own, made by `setup-signing.py`.
+
+**Copying the secrets with a one-off workflow**
+
+1. Create a fine-grained personal access token with **Secrets: Read and write** on the new repository only (Settings, Developer settings). The built-in `GITHUB_TOKEN` cannot write to another repository. (For this project the `gh auth token` login token was used instead, which also works because it has the `repo` scope, but it reaches every repository, so prefer the fine-grained one.) Store it in the source repository as `JQ_REPO_SECRETS_TOKEN`:
+   ```bash
+   gh secret set JQ_REPO_SECRETS_TOKEN -R <owner>/<source-repo>
+   ```
+2. Add this workflow to the source repository (the one that already has the API key and certificate), changing `TARGET_REPO` and `DVHUU4ZMJ7` (the ID of the certificate to reuse, listed by the script's note or the portal):
+   ```yaml
+   name: Provision signing secrets
+   on: workflow_dispatch
+   permissions:
+     contents: read
+   jobs:
+     provision:
+       runs-on: ubuntu-latest
+       env:
+         TARGET_REPO: hmatt1/jq-for-shortcuts
+         GH_TOKEN: ${{ secrets.JQ_REPO_SECRETS_TOKEN }}
+       steps:
+         - uses: actions/checkout@v4          # the new app, for Tools/setup-signing.py
+           with:
+             repository: ${{ env.TARGET_REPO }}
+             token: ${{ secrets.JQ_REPO_SECRETS_TOKEN }}
+         - run: pip install pyjwt cryptography
+         - name: Reuse the existing Distribution certificate
+           env:
+             IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+             IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+           run: |
+             umask 077
+             mkdir -p .signing
+             printf '%s' "$IOS_DIST_CERT_P12_BASE64" > .signing/distribution.p12.b64
+             printf '%s' "$IOS_DIST_CERT_PASSWORD" > .signing/distribution.p12.password.txt
+             printf '{"id": "DVHUU4ZMJ7"}' > .signing/certificate.json
+         - name: Create the profiles
+           env:
+             ASC_KEY_ID: ${{ secrets.ADMIN_APPSTORE_KEY_ID }}
+             ASC_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+             ADMIN_APPSTORE_P8_KEY: ${{ secrets.ADMIN_APPSTORE_P8_KEY }}
+           run: |
+             umask 077
+             printf '%s\n' "$ADMIN_APPSTORE_P8_KEY" > "$RUNNER_TEMP/AuthKey.p8"
+             ASC_PRIVATE_KEY_PATH="$RUNNER_TEMP/AuthKey.p8" python3 Tools/setup-signing.py
+         - name: Store the secrets in the new repository
+           env:
+             ADMIN_APPSTORE_KEY_ID: ${{ secrets.ADMIN_APPSTORE_KEY_ID }}
+             APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+             ADMIN_APPSTORE_P8_KEY: ${{ secrets.ADMIN_APPSTORE_P8_KEY }}
+           run: |
+             set -e
+             set_from_file() { gh secret set "$1" -R "$TARGET_REPO" < "$2"; }
+             set_from_file IOS_DIST_CERT_P12_BASE64 .signing/distribution.p12.b64
+             set_from_file IOS_DIST_CERT_PASSWORD .signing/distribution.p12.password.txt
+             set_from_file IOS_PROFILE_APP_BASE64 .signing/app.mobileprovision.b64
+             set_from_file IOS_PROFILE_SHARE_BASE64 .signing/share.mobileprovision.b64
+             set_from_file IOS_PROFILE_CONTROLS_BASE64 .signing/controls.mobileprovision.b64
+             printf '%s' "$ADMIN_APPSTORE_KEY_ID" | gh secret set ADMIN_APPSTORE_KEY_ID -R "$TARGET_REPO"
+             printf '%s' "$APPSTORE_ISSUER_ID" | gh secret set APPSTORE_ISSUER_ID -R "$TARGET_REPO"
+             printf '%s\n' "$ADMIN_APPSTORE_P8_KEY" | gh secret set ADMIN_APPSTORE_P8_KEY -R "$TARGET_REPO"
+             gh secret list -R "$TARGET_REPO"
+         - name: Delete key material
+           if: always()
+           run: rm -rf .signing "$RUNNER_TEMP/AuthKey.p8"
+   ```
+   The script prints only names and IDs, never key material, and the secrets are masked in the logs. If the source repository is public, never upload `.signing/` as an artifact.
+3. Run it: `gh workflow run <file>.yml -R <owner>/<source-repo>`, then watch it with `gh run watch`.
+4. **Afterwards**, delete the token secret, the workflow file, and the personal access token if you made one.
+
+**Things that went wrong, and why**
+
+| Symptom | Cause and fix |
+| --- | --- |
+| `The App Group ... is not assigned to` the three IDs | The group is not configured on the App IDs. Configure it in the portal, then re-run. |
+| `409 You already have a current Distribution certificate` | The two-certificate cap. Reuse a certificate (above) or revoke an unused one in the portal. |
+| An unusable certificate appeared after a failed run | The workflow deletes `.signing/` at the end, so a run that fails *after* creating a certificate loses its private key. Re-running mints another. Reusing an existing certificate avoids this; otherwise revoke the orphan. |
+| `Unable to find Apple ID for Bundle ID` at the TestFlight upload | The app record does not exist yet. Create it in App Store Connect (step 5); the API cannot. |
+
 ### 5. Create the app in App Store Connect
 
 **Apps**, **+**, **New App**: platform iOS, name `JQ for Shortcuts`, primary language English (U.S.), bundle ID `com.hmatt1.jqforshortcuts`, any SKU such as `jq-for-shortcuts`. The API cannot create the app record.
